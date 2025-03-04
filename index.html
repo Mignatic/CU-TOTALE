@@ -1,1 +1,355 @@
-<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Calculateur de Poids Maximal pour Camions Lourds</title><style>body{font-family:'Arial',sans-serif;background:linear-gradient(135deg,#f0f7f4,#e0f2e9);margin:0;padding:0;display:flex;justify-content:center;align-items:center;min-height:100vh;}.container{max-width:900px;width:100%;background-color:#ffffff;border-radius:15px;box-shadow:0 10px 20px rgba(0,0,0,0.1);padding:30px;margin:20px;transition:transform 0.3s ease;}.container:hover{transform:translateY(-5px);}h1{text-align:center;color:#2e7d32;font-size:2.5em;margin-bottom:20px;font-weight:bold;text-shadow:1px 1px 2px rgba(0,0,0,0.1);}.calculator{padding:20px;background:#f9fafb;border-radius:10px;box-shadow:0 5px 10px rgba(0,0,0,0.05);}select,input[type="number"],button{display:block;margin:15px 0;padding:12px;width:100%;max-width:350px;border:2px solid #4caf50;border-radius:8px;box-sizing:border-box;font-size:1em;background-color:#fff;transition:border-color 0.3s ease,box-shadow 0.3s ease;}select:focus,input[type="number"]:focus{border-color:#2e7d32;box-shadow:0 0 5px rgba(46,125,50,0.5);outline:none;}button{background-color:#4caf50;color:white;border:none;cursor:pointer;font-size:1.1em;font-weight:bold;transition:background-color 0.3s ease,transform 0.2s ease;}button:hover{background-color:#2e7d32;transform:scale(1.05);}#results{margin-top:20px;padding:20px;background-color:#e8f5e9;border-radius:10px;box-shadow:0 5px 10px rgba(0,0,0,0.05);}#warning,#compatibility,.step,.solution{font-weight:bold;margin:10px 0;line-height:1.5;}.step{color:#006400;font-size:1.1em;}#warning,#compatibility,.solution{color:#d32f2f;font-size:1.1em;display:none;}#solutions{margin-top:15px;padding:15px;background-color:#ffebee;border-radius:8px;border-left:5px solid #d32f2f;display:none;}#solutionList{list-style-type:none;padding:0;margin:0;}#solutionList li{margin:5px 0;padding-left:10px;}</style></head><body><div class="container"><h1>Calculateur de Poids Maximal pour Camions Lourds</h1><div class="calculator"><h2>Sélectionnez le Type de Véhicule</h2><select id="vehicleType" onchange="toggleInputs()"><option value="single">Véhicule Isolé</option><option value="articulated">Véhicule Articulé (Tracteur + Semi-remorque)</option><option value="train">Train Routier</option></select><div id="inputs"><label for="axlesTruck">Nombre d’essieux du Camion/Tracteur:</label><select id="axlesTruck"><option value="2">2 essieux</option><option value="3">3 essieux</option><option value="4">4 essieux ou +</option></select><label for="ptacTruck">PTAC Camion/Tracteur (Poids Total Autorisé en Charge):</label><input type="number" id="ptacTruck" placeholder="Entrez le poids (tonnes)" step="0.1"><label for="pvTruck">PV Camion/Tracteur (Poids à Vide):</label><input type="number" id="pvTruck" placeholder="Entrez le poids (tonnes)" step="0.1"><div id="trailerInputs" style="display:none;"><label for="axlesTrailer">Nombre d’essieux de la Remorque/Semi:</label><select id="axlesTrailer"><option value="0">Aucun (Véhicule Isolé)</option><option value="2">2 essieux</option><option value="3">3 essieux</option><option value="4">4 essieux ou +</option></select><label for="ptacTrailer">PTAC Remorque/Semi (Poids Total Autorisé en Charge):</label><input type="number" id="ptacTrailer" placeholder="Entrez le poids (tonnes)" step="0.1"><label for="pvTrailer">PV Remorque/Semi (Poids à Vide):</label><input type="number" id="pvTrailer" placeholder="Entrez le poids (tonnes)" step="0.1"><label for="ptr">PTRA (Poids Total Roulant Autorisé du Camion + Remorque):</label><input type="number" id="ptr" placeholder="Entrez le poids (tonnes)" step="0.1"></div></div><button onclick="calculate()">Calculer</button><div id="results"><h3>Résultats :</h3><div id="calculationSteps"></div><div id="solutions" style="display:none;"><p class="solution">💡 Solutions possibles pour assurer la compatibilité :</p><ul id="solutionList" style="color:#d32f2f;list-style-type:none;padding:0;"></ul></div><p id="warning">⚠ Le poids réel ne doit pas dépasser la MMA !</p><p id="compatibility">⚠ Le camion et la remorque ne sont pas compatibles ! Le poids combiné dépasse le PTRA ou les limites totales.</p></div></div></div><script>var _0x1f3b=['getElementById','value','parseInt','parseFloat','min','capacity','ensembleLimit','style','display','block','none','innerHTML','toFixed'];(function(_0x2c5e,_0x1f3b){var _0x4e6d=function(_0x5e2e){return _0x2c5e[_0x5e2e];};function _0x2c5e(){const _0x5e2e=_0x4e6d(0)('vehicleType')[_0x4e6d(1)];const _0x1f3b=_0x4e6d(2)(_0x4e6d(0)('axlesTruck')[_0x4e6d(1)]);const _0x2c5e=_0x4e6d(3)(_0x4e6d(0)('ptacTruck')[_0x4e6d(1)])||0;
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Poids Maximal pour Camions Lourds</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f0f7f4, #e0f2e9);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .calculator {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        select, input[type="number"], button {
+            display: block;
+            margin: 15px 0;
+            padding: 12px;
+            width: 100%;
+            max-width: 350px;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #fff;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: #2e7d32;
+            box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
+            outline: none;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2e7d32;
+            transform: scale(1.05);
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        #warning, #compatibility, .step, .solution {
+            font-weight: bold;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .step {
+            color: #006400; /* Vert foncé pour les étapes intermédiaires */
+            font-size: 1.1em;
+        }
+
+        #warning, #compatibility, .solution {
+            color: #d32f2f; /* Rouge vif pour les avertissements et solutions */
+            font-size: 1.1em;
+            display: none; /* Initially hidden until conditions are met */
+        }
+
+        #solutions {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #ffebee;
+            border-radius: 8px;
+            border-left: 5px solid #d32f2f;
+            display: none; /* Initially hidden until solutions are needed */
+        }
+
+        #solutionList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #solutionList li {
+            margin: 5px 0;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculateur de Poids Maximal pour Camions Lourds</h1>
+        <div class="calculator">
+            <h2>Sélectionnez le Type de Véhicule</h2>
+            <select id="vehicleType" onchange="toggleInputs()">
+                <option value="single">Véhicule Isolé</option>
+                <option value="articulated">Véhicule Articulé (Tracteur + Semi-remorque)</option>
+                <option value="train">Train Routier</option>
+            </select>
+
+            <div id="inputs">
+                <!-- Inputs communs -->
+                <label for="axlesTruck">Nombre d’essieux du Camion/Tracteur:</label>
+                <select id="axlesTruck">
+                    <option value="2">2 essieux</option>
+                    <option value="3">3 essieux</option>
+                    <option value="4">4 essieux ou +</option>
+                </select>
+
+                <label for="ptacTruck">PTAC Camion/Tracteur (Poids Total Autorisé en Charge):</label>
+                <input type="number" id="ptacTruck" placeholder="Entrez le poids (tonnes)" step="0.1">
+
+                <label for="pvTruck">PV Camion/Tracteur (Poids à Vide):</label>
+                <input type="number" id="pvTruck" placeholder="Entrez le poids (tonnes)" step="0.1">
+
+                <!-- Inputs pour Véhicule Articulé et Train Routier -->
+                <div id="trailerInputs" style="display: none;">
+                    <label for="axlesTrailer">Nombre d’essieux de la Remorque/Semi:</label>
+                    <select id="axlesTrailer">
+                        <option value="0">Aucun (Véhicule Isolé)</option>
+                        <option value="2">2 essieux</option>
+                        <option value="3">3 essieux</option>
+                        <option value="4">4 essieux ou +</option>
+                    </select>
+
+                    <label for="ptacTrailer">PTAC Remorque/Semi (Poids Total Autorisé en Charge):</label>
+                    <input type="number" id="ptacTrailer" placeholder="Entrez le poids (tonnes)" step="0.1">
+
+                    <label for="pvTrailer">PV Remorque/Semi (Poids à Vide):</label>
+                    <input type="number" id="pvTrailer" placeholder="Entrez le poids (tonnes)" step="0.1">
+
+                    <label for="ptr">PTRA (Poids Total Roulant Autorisé du Camion + Remorque):</label>
+                    <input type="number" id="ptr" placeholder="Entrez le poids (tonnes)" step="0.1">
+                </div>
+            </div>
+
+            <button onclick="calculate()">Calculer</button>
+
+            <div id="results">
+                <h3>Résultats :</h3>
+                <div id="calculationSteps">
+                    <!-- Steps will be dynamically updated based on vehicle type -->
+                </div>
+                <div id="solutions" style="display: none;">
+                    <p class="solution">💡 Solutions possibles pour assurer la compatibilité :</p>
+                    <ul id="solutionList" style="color: #d32f2f; list-style-type: none; padding: 0;">
+                        <!-- Solutions will be dynamically added here -->
+                    </ul>
+                </div>
+                <p id="warning">⚠ Le poids réel ne doit pas dépasser la MMA !</p>
+                <p id="compatibility">⚠ Le camion et la remorque ne sont pas compatibles ! Le poids combiné dépasse le PTRA ou les limites totales.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to toggle trailer inputs based on vehicle type
+        function toggleInputs() {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const trailerInputs = document.getElementById('trailerInputs');
+            if (vehicleType === 'single') {
+                trailerInputs.style.display = 'none';
+            } else {
+                trailerInputs.style.display = 'block';
+            }
+        }
+
+        function calculate() {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const axlesTruck = parseInt(document.getElementById('axlesTruck').value);
+            const ptacTruck = parseFloat(document.getElementById('ptacTruck').value) || 0;
+            const pvTruck = parseFloat(document.getElementById('pvTruck').value) || 0;
+            let mma = 0;
+            let cu = 0;
+            let stepsHtml = '';
+            let solutionsHtml = '';
+
+            // Check if any critical input is zero or empty to avoid unnecessary warnings
+            if (ptacTruck === 0 && (vehicleType === 'articulated' || vehicleType === 'train')) {
+                document.getElementById('calculationSteps').innerHTML = '';
+                document.getElementById('warning').style.display = 'none';
+                document.getElementById('compatibility').style.display = 'none';
+                document.getElementById('solutions').style.display = 'none';
+                return; // Exit if no PTAC for truck, avoiding warnings
+            }
+
+            // Définir les poids maximaux par ensemble selon le nombre d'essieux (basé sur les images)
+            let maxEnsembleWeightTruck = 0;
+            if (axlesTruck === 2) maxEnsembleWeightTruck = 19; // 19 t maxi pour 2 essieux
+            else if (axlesTruck === 3) maxEnsembleWeightTruck = 26; // 26 t maxi pour 3 essieux
+            else if (axlesTruck === 4) maxEnsembleWeightTruck = 32; // 32 t maxi pour 4 essieux ou +
+
+            // Vérifier que le PTAC ne dépasse pas le poids maximal par ensemble
+            const effectivePtacTruck = Math.min(ptacTruck, maxEnsembleWeightTruck);
+
+            if (vehicleType === 'single') {
+                // Calcul pour Véhicule Isolé
+                mma = effectivePtacTruck; // MMA = PTAC Camion (limité par le poids maximal pour le nombre d’essieux)
+                cu = mma - pvTruck; // CU = MMA - PV Camion
+
+                stepsHtml = `
+                    <p class="step">1) PTAC du véhicule isolé : ${effectivePtacTruck.toFixed(2)} t</p>
+                    <p class="step">2) MMA (PMA) : ${mma.toFixed(2)} t</p>
+                    <p class="step" style="color: #d32f2f;">CU = MMA - PV : ${cu.toFixed(2)} t</p>
+                `;
+            } else {
+                // Inputs pour Véhicule Articulé ou Train Routier
+                const axlesTrailer = parseInt(document.getElementById('axlesTrailer').value);
+                const ptacTrailer = parseFloat(document.getElementById('ptacTrailer').value) || 0;
+                const pvTrailer = parseFloat(document.getElementById('pvTrailer').value) || 0;
+                const ptr = parseFloat(document.getElementById('ptr').value) || 0;
+
+                // Check if PTAC trailer or PTRA is zero/empty to avoid unnecessary warnings
+                if (ptacTrailer === 0 || ptr === 0) {
+                    document.getElementById('calculationSteps').innerHTML = '';
+                    document.getElementById('warning').style.display = 'none';
+                    document.getElementById('compatibility').style.display = 'none';
+                    document.getElementById('solutions').style.display = 'none';
+                    return; // Exit if no PTAC for trailer or PTRA, avoiding warnings
+                }
+
+                let maxEnsembleWeightTrailer = 0;
+                if (axlesTrailer === 2) maxEnsembleWeightTrailer = 19; // 19 t maxi pour 2 essieux de la remorque
+                else if (axlesTrailer === 3) maxEnsembleWeightTrailer = 26; // 26 t maxi pour 3 essieux de la remorque
+                else if (axlesTrailer === 4) maxEnsembleWeightTrailer = 32; // 32 t maxi pour 4 essieux ou + de la remorque
+
+                const effectivePtacTrailer = Math.min(ptacTrailer, maxEnsembleWeightTrailer);
+
+                if (vehicleType === 'articulated') {
+                    // Calcul pour Véhicule Articulé (comme dans Exemple 2)
+                    const ptrTractor = ptr; // PTRA du tracteur
+                    const capacity = pvTruck + effectivePtacTrailer; // Capacité de la semi combinée avec le tracteur (PV tracteur + PTAC semi)
+                    const ensembleAxles = 44; // Nombre d’essieux de l’ensemble (fixé à 44 t pour 5 essieux ou + comme dans l’exemple)
+
+                    mma = Math.min(ptrTractor, capacity, ensembleAxles); // MMA = la plus petite des 3 valeurs
+                    cu = mma - (pvTruck + pvTrailer); // CU = MMA - (PV tracteur + PV semi)
+
+                    stepsHtml = `
+                        <p class="step">1) Le PTRA du tracteur : ${ptrTractor.toFixed(2)} t</p>
+                        <p class="step">2) La capacité de la semi combinée avec le tracteur : PV tracteur + PTAC semi : ${capacity.toFixed(2)} t</p>
+                        <p class="step">3) Le nombre d’essieux de l’ensemble : ${ensembleAxles.toFixed(2)} t</p>
+                        <p class="step" style="color: #d32f2f;">Le MMA (PMA) sera la plus petite des 3 valeurs : ${mma.toFixed(2)} t</p>
+                        <p class="step" style="color: #d32f2f;">CU = MMA - (PV tracteur + PV semi) : ${cu.toFixed(2)} t</p>
+                    `;
+
+                    // Vérifier la compatibilité et proposer des solutions
+                    if (ptacTruck + ptacTrailer > ptrTractor || ptacTruck > maxEnsembleWeightTruck || ptacTrailer > maxEnsembleWeightTrailer) {
+                        solutionsHtml = `
+                            <li>1) Réduire le PTAC du camion à ${Math.min(ptrTractor - ptacTrailer, maxEnsembleWeightTruck).toFixed(2)} t ou moins.</li>
+                            <li>2) Réduire le PTAC de la semi-remorque à ${Math.min(ptrTractor - ptacTruck, maxEnsembleWeightTrailer).toFixed(2)} t ou moins.</li>
+                            <li>3) Changer la semi-remorque pour une avec un PTAC maximal de ${Math.min(ptrTractor - ptacTruck, 32).toFixed(2)} t (si 4 essieux ou +).</li>
+                        `;
+                        document.getElementById('compatibility').style.display = 'block';
+                    } else {
+                        document.getElementById('compatibility').style.display = 'none';
+                    }
+                } else if (vehicleType === 'train') {
+                    // Calcul pour Train Routier (comme dans votre screenshot)
+                    const capacity = ptacTruck + ptacTrailer; // Capacité combinée (PTAC camion + PTAC remorque)
+                    const ensembleLimit = 44; // Limite maximale de l’ensemble (5 essieux ou +)
+
+                    mma = Math.min(ptr, capacity, ensembleLimit); // MMA = la plus petite des 3 valeurs
+                    cu = mma - (pvTruck + pvTrailer); // CU = MMA - (PV camion + PV remorque)
+
+                    stepsHtml = `
+                        <p class="step">1) PTRA du train routier : ${ptr.toFixed(2)} t</p>
+                        <p class="step">2) Capacité combinée (PTAC camion + PTAC remorque) : ${ptacTruck.toFixed(2)} + ${ptacTrailer.toFixed(2)} = ${capacity.toFixed(2)} t</p>
+                        <p class="step">3) Limite maximale de l’ensemble (5 essieux ou +) : ${ensembleLimit.toFixed(2)} t</p>
+                        <p class="step" style="color: #d32f2f;">Le MMA (PMA) sera la plus petite des 3 valeurs : ${mma.toFixed(2)} t</p>
+                        <p class="step" style="color: #d32f2f;">CU = MMA - (PV camion + PV remorque) : ${cu.toFixed(2)} t</p>
+                    `;
+
+                    // Vérifier la compatibilité et proposer des solutions
+                    if (ptacTruck + ptacTrailer > ptr || ptacTruck > maxEnsembleWeightTruck || ptacTrailer > maxEnsembleWeightTrailer) {
+                        solutionsHtml = `
+                            <li>1) Réduire le PTAC du camion à ${Math.min(ptr - ptacTrailer, maxEnsembleWeightTruck).toFixed(2)} t ou moins.</li>
+                            <li>2) Réduire le PTAC de la remorque à ${Math.min(ptr - ptacTruck, maxEnsembleWeightTrailer).toFixed(2)} t ou moins.</li>
+                            <li>3) Changer la remorque pour une avec un PTAC maximal de ${Math.min(ptr - ptacTruck, 32).toFixed(2)} t (si 4 essieux ou +).</li>
+                        `;
+                        document.getElementById('compatibility').style.display = 'block';
+                    } else {
+                        document.getElementById('compatibility').style.display = 'none';
+                    }
+                }
+            }
+
+            // Vérifier si le poids réel dépasse la MMA et afficher le warning uniquement si des valeurs sont entrées
+            const actualWeight = ptacTruck + (vehicleType !== 'single' ? (ptacTrailer || 0) : 0);
+            const warning = document.getElementById('warning');
+            if (actualWeight > 0 && actualWeight > mma) {
+                warning.style.display = 'block';
+            } else {
+                warning.style.display = 'none';
+            }
+
+            // Afficher les étapes de calcul
+            document.getElementById('calculationSteps').innerHTML = stepsHtml;
+
+            // Afficher ou masquer les solutions si nécessaire
+            const solutionsDiv = document.getElementById('solutions');
+            const solutionList = document.getElementById('solutionList');
+            if (solutionsHtml) {
+                solutionList.innerHTML = solutionsHtml;
+                solutionsDiv.style.display = 'block';
+            } else {
+                solutionsDiv.style.display = 'none';
+            }
+        }
+
+        // Initialement masquer les inputs de la remorque
+        toggleInputs();
+    </script>
+</body>
+</html>
